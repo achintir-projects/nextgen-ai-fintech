@@ -225,6 +225,72 @@ model LedgerEntry {
   @@index([createdAt])
 }
 
+// Project Management Models
+model Project {
+  id            String   @id @default(cuid())
+  name          String
+  description   String?
+  type          ProjectType // 'MOBILE_APP', 'WEB_APP', 'SDK_INTEGRATION'
+  platform      String?  // 'android', 'ios', 'web', 'multi-platform'
+  status        ProjectStatus @default(ACTIVE)
+  config        Json?    // Project configuration
+  buildSettings Json?    // Build settings
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  userId        String
+
+  // Relations
+  user          User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  builds        Build[]
+  deployments   Deployment[]
+  
+  @@index([userId])
+  @@index([status])
+}
+
+model Build {
+  id            String   @id @default(cuid())
+  projectId     String
+  version       String
+  buildNumber   Int
+  status        BuildStatus @default(PENDING)
+  config        Json?    // Build configuration
+  logs          String?  // Build logs
+  artifacts     Json?    // Build artifacts
+  startedAt     DateTime?
+  completedAt   DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  project       Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  deployments   Deployment[]
+  
+  @@index([projectId])
+  @@index([status])
+}
+
+model Deployment {
+  id            String   @id @default(cuid())
+  projectId     String
+  buildId       String?
+  environment   String   // 'development', 'staging', 'production'
+  status        DeploymentStatus @default(PENDING)
+  config        Json?    // Deployment configuration
+  logs          String?  // Deployment logs
+  deployedAt    DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Relations
+  project       Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  build         Build? @relation(fields: [buildId], references: [id])
+  
+  @@index([projectId])
+  @@index([status])
+  @@index([environment])
+}
+
 // Legacy models (for backward compatibility)
 model User {
   id        String   @id @default(cuid())
@@ -238,6 +304,7 @@ model User {
   // Relations
   downloads    Download[]
   apiKeys      ApiKey[]
+  projects     Project[]
   organization Organization? @relation(fields: [organizationId], references: [id])
 }
 
@@ -466,4 +533,33 @@ enum UserRole {
 enum EntryType {
   DEBIT
   CREDIT
+}
+
+enum ProjectType {
+  MOBILE_APP
+  WEB_APP
+  SDK_INTEGRATION
+}
+
+enum ProjectStatus {
+  ACTIVE
+  ARCHIVED
+  DEPRECATED
+  INACTIVE
+}
+
+enum BuildStatus {
+  PENDING
+  IN_PROGRESS
+  SUCCESS
+  FAILED
+  CANCELLED
+}
+
+enum DeploymentStatus {
+  PENDING
+  IN_PROGRESS
+  SUCCESS
+  FAILED
+  ROLLED_BACK
 }

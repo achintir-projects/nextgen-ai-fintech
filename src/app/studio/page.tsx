@@ -188,7 +188,7 @@ const commandPaletteActions = [
   }
 ]
 
-export default function Home() {
+export default function StudioPage() {
   const [commandPaletteOpen, setCommandPaletteOpen] = useState(false)
   const [createNewOpen, setCreateNewOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")

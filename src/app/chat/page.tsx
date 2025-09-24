@@ -33,8 +33,58 @@ import {
   Smartphone,
   Code,
   ExternalLink,
-  PlayCircle
+  PlayCircle,
+  Home,
+  ArrowLeft,
+  Plus,
+  Edit,
+  Trash2,
+  GitBranch,
+  Rocket
 } from "lucide-react"
+
+interface Project {
+  id: string
+  name: string
+  description?: string
+  type: string
+  platform?: string
+  status: string
+  config?: any
+  buildSettings?: any
+  createdAt: Date
+  updatedAt: Date
+  builds: Build[]
+  deployments: Deployment[]
+  user: {
+    id: string
+    name?: string
+    email: string
+  }
+}
+
+interface Build {
+  id: string
+  version: string
+  buildNumber: number
+  status: string
+  config?: any
+  logs?: string
+  artifacts?: any
+  startedAt?: Date
+  completedAt?: Date
+  createdAt: Date
+}
+
+interface Deployment {
+  id: string
+  environment: string
+  status: string
+  config?: any
+  logs?: string
+  deployedAt?: Date
+  createdAt: Date
+}
 
 interface Message {
   id: string
@@ -99,6 +149,105 @@ export default function ChatPage() {
     downloadUrl?: string
     code?: string
   } | null>(null)
+  
+  // Project management state
+  const [projects, setProjects] = useState<Project[]>([])
+  const [selectedProject, setSelectedProject] = useState<Project | null>(null)
+  const [isEditingProject, setIsEditingProject] = useState(false)
+  const [editingProject, setEditingProject] = useState<Partial<Project> | null>(null)
+  const [projectsLoading, setProjectsLoading] = useState(true)
+
+  // Fetch projects on component mount
+  useEffect(() => {
+    fetchProjects()
+  }, [])
+
+  const fetchProjects = async () => {
+    try {
+      setProjectsLoading(true)
+      // For demo purposes, using a fixed user ID
+      const response = await fetch(`/api/projects?userId=demo-user-1`)
+      const data = await response.json()
+      
+      if (data.success) {
+        setProjects(data.data)
+      }
+    } catch (error) {
+      console.error('Error fetching projects:', error)
+    } finally {
+      setProjectsLoading(false)
+    }
+  }
+
+  const handleCreateProject = async () => {
+    const newProject = {
+      name: "New Project",
+      description: "A new project",
+      type: "MOBILE_APP",
+      platform: "android",
+      userId: "demo-user-1"
+    }
+
+    try {
+      const response = await fetch('/api/projects', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(newProject)
+      })
+
+      const data = await response.json()
+      if (data.success) {
+        setProjects(prev => [data.data, ...prev])
+        setSelectedProject(data.data)
+      }
+    } catch (error) {
+      console.error('Error creating project:', error)
+    }
+  }
+
+  const handleUpdateProject = async () => {
+    if (!editingProject || !selectedProject) return
+
+    try {
+      const response = await fetch(`/api/projects/${selectedProject.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(editingProject)
+      })
+
+      const data = await response.json()
+      if (data.success) {
+        setProjects(prev => prev.map(p => p.id === data.data.id ? data.data : p))
+        setSelectedProject(data.data)
+        setIsEditingProject(false)
+        setEditingProject(null)
+      }
+    } catch (error) {
+      console.error('Error updating project:', error)
+    }
+  }
+
+  const handleDeleteProject = async (projectId: string) => {
+    try {
+      const response = await fetch(`/api/projects/${projectId}`, {
+        method: 'DELETE'
+      })
+
+      const data = await response.json()
+      if (data.success) {
+        setProjects(prev => prev.filter(p => p.id !== projectId))
+        if (selectedProject?.id === projectId) {
+          setSelectedProject(null)
+        }
+      }
+    } catch (error) {
+      console.error('Error deleting project:', error)
+    }
+  }
 
   // Mock file content for demonstration
   const mockFileContent = `// PAAM FinTech SDK - Android Implementation
@@ -811,6 +960,13 @@ class ViewController: UIViewController {
     <div className="h-screen bg-gray-50">
       {/* Top Toolbar */}
       <div className="h-12 bg-white border-b flex items-center px-4 gap-2">
+        <Button size="sm" variant="outline" asChild className="hover:bg-blue-50 hover:text-blue-700">
+          <a href="/">
+            <ArrowLeft className="w-4 h-4 mr-1" />
+            Back to Main UI
+          </a>
+        </Button>
+        <div className="w-px h-6 bg-gray-200" />
         <Button size="sm" variant="outline" className="hover:bg-blue-50 hover:text-blue-700">
           <Play className="w-4 h-4 mr-1" />
           New Run
@@ -849,137 +1005,349 @@ class ViewController: UIViewController {
 
       {/* Three-Pane Layout */}
       <PanelGroup direction="horizontal" className="flex-1">
-        {/* Left Panel - Apps/Runs/History */}
+        {/* Left Panel - Projects */}
         <Panel defaultSize={20} minSize={15} maxSize={30}>
           <div className="h-full bg-white border-r p-4">
-            <h3 className="font-semibold text-sm mb-4">History</h3>
-            <ScrollArea className="h-[calc(100vh-120px)]">
-              <div className="space-y-2">
-                {messages.map((message, index) => (
-                  <div
-                    key={index}
-                    className="p-2 rounded hover:bg-gray-100 cursor-pointer text-sm"
-                  >
-                    <div className="flex items-center gap-2">
-                      {message.type === "user" ? 
-                        <User className="w-3 h-3" /> : 
-                        <Bot className="w-3 h-3" />
-                      }
-                      <span className="truncate">{message.status}</span>
-                    </div>
-                    <div className="text-xs text-gray-500 mt-1">
-                      {message.timestamp.toLocaleTimeString()}
-                    </div>
-                  </div>
-                ))}
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-semibold text-sm">Projects</h3>
+              <Button size="sm" variant="ghost" onClick={handleCreateProject}>
+                <Plus className="w-3 h-3" />
+              </Button>
+            </div>
+            
+            {projectsLoading ? (
+              <div className="flex items-center justify-center h-32">
+                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
               </div>
-            </ScrollArea>
+            ) : (
+              <ScrollArea className="h-[calc(100vh-120px)]">
+                <div className="space-y-2">
+                  {projects.map((project) => (
+                    <div
+                      key={project.id}
+                      className={`p-3 rounded-lg border cursor-pointer transition-colors ${
+                        selectedProject?.id === project.id 
+                          ? 'bg-blue-50 border-blue-200' 
+                          : 'hover:bg-gray-50 border-gray-200'
+                      }`}
+                      onClick={() => setSelectedProject(project)}
+                    >
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            {project.platform === 'android' ? (
+                              <span className="text-lg">🤖</span>
+                            ) : project.platform === 'ios' ? (
+                              <span className="text-lg">🍎</span>
+                            ) : (
+                              <span className="text-lg">📱</span>
+                            )}
+                            <h4 className="font-medium text-sm truncate">{project.name}</h4>
+                          </div>
+                          <p className="text-xs text-gray-500 truncate">{project.description}</p>
+                          <div className="flex items-center gap-2 mt-2">
+                            <Badge 
+                              variant={project.status === 'ACTIVE' ? 'default' : 'secondary'}
+                              className="text-xs"
+                            >
+                              {project.status}
+                            </Badge>
+                            {project.builds.length > 0 && (
+                              <Badge variant="outline" className="text-xs">
+                                {project.builds.length} builds
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-1 ml-2">
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-6 w-6 p-0"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              setEditingProject(project)
+                              setIsEditingProject(true)
+                            }}
+                          >
+                            <Edit className="w-3 h-3" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-6 w-6 p-0 text-red-600 hover:text-red-700"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              handleDeleteProject(project.id)
+                            }}
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </ScrollArea>
+            )}
           </div>
         </Panel>
 
-        <PanelResizeHandle withHandle />
+        <PanelResizeHandle />
 
-        {/* Center Panel - Chat */}
+        {/* Center Panel - Chat or Project Details */}
         <Panel defaultSize={60} minSize={40}>
           <div className="h-full flex flex-col">
-              {/* Chat Messages */}
-            <div className="flex-1 p-4">
-              {messages.length > 3 && !summaryMode && (
-                <div className="mb-4 flex justify-center">
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={summarizeAbove}
-                    className="text-xs"
-                  >
-                    📝 Summarize above ({messages.length - 3} messages)
-                  </Button>
-                </div>
-              )}
-              <Virtuoso
-                data={messages}
-                followOutput="smooth"
-                itemContent={(index, message) => (
-                  <div key={message.id} className="pb-4">
-                    {renderMessage(message)}
+            {selectedProject ? (
+              // Project Details View
+              <div className="flex-1 p-6">
+                <div className="max-w-4xl mx-auto">
+                  {/* Project Header */}
+                  <div className="mb-8">
+                    <div className="flex items-center justify-between mb-4">
+                      <div className="flex items-center gap-4">
+                        <div className="text-4xl">
+                          {selectedProject.platform === 'android' ? '🤖' : 
+                           selectedProject.platform === 'ios' ? '🍎' : '📱'}
+                        </div>
+                        <div>
+                          <h1 className="text-2xl font-bold text-gray-900">{selectedProject.name}</h1>
+                          <p className="text-gray-600">{selectedProject.description}</p>
+                          <div className="flex items-center gap-2 mt-2">
+                            <Badge variant={selectedProject.status === 'ACTIVE' ? 'default' : 'secondary'}>
+                              {selectedProject.status}
+                            </Badge>
+                            <Badge variant="outline">{selectedProject.type}</Badge>
+                            <Badge variant="outline">{selectedProject.platform}</Badge>
+                          </div>
+                        </div>
+                      </div>
+                      <Button
+                        variant="outline"
+                        onClick={() => setSelectedProject(null)}
+                      >
+                        <ArrowLeft className="w-4 h-4 mr-2" />
+                        Back to Chat
+                      </Button>
+                    </div>
                   </div>
-                )}
-                className="h-full"
-                style={{ overflowY: 'auto' }}
-              />
-            </div>
 
-            {/* Input Area */}
-            <div className="border-t bg-white p-4">
-              <div className="flex gap-2">
-                <Input
-                  ref={inputRef}
-                  value={inputValue}
-                  onChange={(e) => setInputValue(e.target.value)}
-                  placeholder="Type your message... (Try /deploy, /build, /test, /rollback)"
-                  onKeyPress={(e) => {
-                    if (e.key === "Enter" && !e.shiftKey) {
-                      e.preventDefault()
-                      handleSend()
-                    }
-                  }}
-                  className="flex-1"
-                />
-                <Button onClick={handleSend} disabled={isRunning || !inputValue.trim()}>
-                  <Send className="w-4 h-4" />
-                </Button>
-              </div>
-              <div className="flex gap-2 mt-3">
-                <div className="flex gap-1 flex-wrap">
-                  <Badge 
-                    variant="outline" 
-                    className="text-xs cursor-pointer hover:bg-blue-100 hover:text-blue-700"
-                    onClick={() => setInputValue("/deploy Android SDK v2.1.0 to production")}
-                  >
-                    /deploy
-                  </Badge>
-                  <Badge 
-                    variant="outline" 
-                    className="text-xs cursor-pointer hover:bg-green-100 hover:text-green-700"
-                    onClick={() => setInputValue("/build current SDK version")}
-                  >
-                    /build
-                  </Badge>
-                  <Badge 
-                    variant="outline" 
-                    className="text-xs cursor-pointer hover:bg-yellow-100 hover:text-yellow-700"
-                    onClick={() => setInputValue("/test deployment pipeline")}
-                  >
-                    /test
-                  </Badge>
-                  <Badge 
-                    variant="outline" 
-                    className="text-xs cursor-pointer hover:bg-red-100 hover:text-red-700"
-                    onClick={() => setInputValue("/rollback to previous version")}
-                  >
-                    /rollback
-                  </Badge>
-                  <Badge 
-                    variant="outline" 
-                    className="text-xs cursor-pointer hover:bg-purple-100 hover:text-purple-700"
-                    onClick={() => setInputValue("/status check all systems")}
-                  >
-                    /status
-                  </Badge>
+                  {/* Project Stats */}
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <Card>
+                      <CardContent className="p-6">
+                        <div className="flex items-center gap-3">
+                          <GitBranch className="w-8 h-8 text-blue-600" />
+                          <div>
+                            <p className="text-2xl font-bold">{selectedProject.builds.length}</p>
+                            <p className="text-sm text-gray-600">Total Builds</p>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                    <Card>
+                      <CardContent className="p-6">
+                        <div className="flex items-center gap-3">
+                          <Rocket className="w-8 h-8 text-green-600" />
+                          <div>
+                            <p className="text-2xl font-bold">{selectedProject.deployments.length}</p>
+                            <p className="text-sm text-gray-600">Deployments</p>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                    <Card>
+                      <CardContent className="p-6">
+                        <div className="flex items-center gap-3">
+                          <Play className="w-8 h-8 text-purple-600" />
+                          <div>
+                            <p className="text-2xl font-bold">
+                              {selectedProject.builds.filter(b => b.status === 'SUCCESS').length}
+                            </p>
+                            <p className="text-sm text-gray-600">Successful Builds</p>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </div>
+
+                  {/* Recent Builds */}
+                  <div className="mb-8">
+                    <h2 className="text-xl font-semibold mb-4">Recent Builds</h2>
+                    <div className="space-y-3">
+                      {selectedProject.builds.slice(0, 5).map((build) => (
+                        <Card key={build.id}>
+                          <CardContent className="p-4">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-3">
+                                <div className={`w-3 h-3 rounded-full ${
+                                  build.status === 'SUCCESS' ? 'bg-green-500' :
+                                  build.status === 'FAILED' ? 'bg-red-500' :
+                                  'bg-yellow-500'
+                                }`}></div>
+                                <div>
+                                  <p className="font-medium">Build #{build.buildNumber} - {build.version}</p>
+                                  <p className="text-sm text-gray-500">
+                                    {build.startedAt && build.completedAt ? 
+                                      `Completed in ${Math.round((build.completedAt.getTime() - build.startedAt.getTime()) / 1000)}s` :
+                                      'In progress...'
+                                    }
+                                  </p>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <Badge variant={build.status === 'SUCCESS' ? 'default' : 'secondary'}>
+                                  {build.status}
+                                </Badge>
+                                <Button size="sm" variant="outline">
+                                  View Logs
+                                </Button>
+                              </div>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Recent Deployments */}
+                  <div>
+                    <h2 className="text-xl font-semibold mb-4">Recent Deployments</h2>
+                    <div className="space-y-3">
+                      {selectedProject.deployments.slice(0, 5).map((deployment) => (
+                        <Card key={deployment.id}>
+                          <CardContent className="p-4">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-3">
+                                <div className={`w-3 h-3 rounded-full ${
+                                  deployment.status === 'SUCCESS' ? 'bg-green-500' :
+                                  deployment.status === 'FAILED' ? 'bg-red-500' :
+                                  'bg-yellow-500'
+                                }`}></div>
+                                <div>
+                                  <p className="font-medium">{deployment.environment}</p>
+                                  <p className="text-sm text-gray-500">
+                                    {deployment.deployedAt ? 
+                                      `Deployed ${deployment.deployedAt.toLocaleDateString()}` :
+                                      'In progress...'
+                                    }
+                                  </p>
+                                </div>
+                              </div>
+                              <Badge variant={deployment.status === 'SUCCESS' ? 'default' : 'secondary'}>
+                                {deployment.status}
+                              </Badge>
+                            </div>
+                          </CardContent>
+                        </Card>
+                      ))}
+                    </div>
+                  </div>
                 </div>
               </div>
-              <div className="mt-2 text-xs text-gray-500">
-                💡 <strong>Tip:</strong> Use slash commands for quick actions or type natural language requests
-                <div className="mt-1">
-                  <Keyboard className="w-3 h-3 inline mr-1" />
-                  <strong>Shortcuts:</strong> Press <kbd className="px-1 py-0.5 bg-gray-100 rounded text-xs">/</kbd> to focus, <kbd className="px-1 py-0.5 bg-gray-100 rounded text-xs">⌘K</kbd> for commands, <kbd className="px-1 py-0.5 bg-gray-100 rounded text-xs">Shift+Enter</kbd> for new line
+            ) : (
+              // Chat View
+              <>
+                {/* Chat Messages */}
+                <div className="flex-1 p-4">
+                  {messages.length > 3 && !summaryMode && (
+                    <div className="mb-4 flex justify-center">
+                      <Button 
+                        variant="outline" 
+                        size="sm" 
+                        onClick={summarizeAbove}
+                        className="text-xs"
+                      >
+                        📝 Summarize above ({messages.length - 3} messages)
+                      </Button>
+                    </div>
+                  )}
+                  <Virtuoso
+                    data={messages}
+                    followOutput="smooth"
+                    itemContent={(index, message) => (
+                      <div key={message.id} className="pb-4">
+                        {renderMessage(message)}
+                      </div>
+                    )}
+                    className="h-full"
+                    style={{ overflowY: 'auto' }}
+                  />
                 </div>
-              </div>
-            </div>
+
+                {/* Input Area */}
+                <div className="border-t bg-white p-4">
+                  <div className="flex gap-2">
+                    <Input
+                      ref={inputRef}
+                      value={inputValue}
+                      onChange={(e) => setInputValue(e.target.value)}
+                      placeholder="Type your message... (Try /deploy, /build, /test, /rollback)"
+                      onKeyPress={(e) => {
+                        if (e.key === "Enter" && !e.shiftKey) {
+                          e.preventDefault()
+                          handleSend()
+                        }
+                      }}
+                      className="flex-1"
+                    />
+                    <Button onClick={handleSend} disabled={isRunning || !inputValue.trim()}>
+                      <Send className="w-4 h-4" />
+                    </Button>
+                  </div>
+                  <div className="flex gap-2 mt-3">
+                    <div className="flex gap-1 flex-wrap">
+                      <Badge 
+                        variant="outline" 
+                        className="text-xs cursor-pointer hover:bg-blue-100 hover:text-blue-700"
+                        onClick={() => setInputValue("/deploy Android SDK v2.1.0 to production")}
+                      >
+                        /deploy
+                      </Badge>
+                      <Badge 
+                        variant="outline" 
+                        className="text-xs cursor-pointer hover:bg-green-100 hover:text-green-700"
+                        onClick={() => setInputValue("/build current SDK version")}
+                      >
+                        /build
+                      </Badge>
+                      <Badge 
+                        variant="outline" 
+                        className="text-xs cursor-pointer hover:bg-yellow-100 hover:text-yellow-700"
+                        onClick={() => setInputValue("/test deployment pipeline")}
+                      >
+                        /test
+                      </Badge>
+                      <Badge 
+                        variant="outline" 
+                        className="text-xs cursor-pointer hover:bg-red-100 hover:text-red-700"
+                        onClick={() => setInputValue("/rollback to previous version")}
+                      >
+                        /rollback
+                      </Badge>
+                      <Badge 
+                        variant="outline" 
+                        className="text-xs cursor-pointer hover:bg-purple-100 hover:text-purple-700"
+                        onClick={() => setInputValue("/status check all systems")}
+                      >
+                        /status
+                      </Badge>
+                    </div>
+                  </div>
+                  <div className="mt-2 text-xs text-gray-500">
+                    💡 <strong>Tip:</strong> Use slash commands for quick actions or type natural language requests
+                    <div className="mt-1">
+                      <Keyboard className="w-3 h-3 inline mr-1" />
+                      <strong>Shortcuts:</strong> Press <kbd className="px-1 py-0.5 bg-gray-100 rounded text-xs">/</kbd> to focus, <kbd className="px-1 py-0.5 bg-gray-100 rounded text-xs">⌘K</kbd> for commands, <kbd className="px-1 py-0.5 bg-gray-100 rounded text-xs">Shift+Enter</kbd> for new line
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
         </Panel>
 
-        <PanelResizeHandle withHandle />
+        <PanelResizeHandle />
 
         {/* Right Panel - Artifacts & Checks */}
         <Panel defaultSize={20} minSize={15} maxSize={30}>
