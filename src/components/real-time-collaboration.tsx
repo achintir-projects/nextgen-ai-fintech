@@ -15,7 +15,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { 
   Users, 
   MessageSquare, 
-  Cursor, 
+  MousePointer, 
   Edit, 
   Eye, 
   Wifi, 
@@ -247,32 +247,32 @@ export default function RealTimeCollaboration({
   return (
     <div className="h-full bg-gray-950 text-gray-100 flex flex-col">
       {/* Collaboration Header */}
-      <div className="flex items-center justify-between p-3 border-b border-gray-800">
+      <div className="flex items-center justify-between p-3 border-b border-gray-800 bg-gray-950">
         <div className="flex items-center space-x-3">
           <div className="flex items-center space-x-2">
             {isConnected ? (
-              <Wifi className="h-4 w-4 text-green-500" />
+              <Wifi className="h-4 w-4 text-green-400" />
             ) : (
-              <WifiOff className="h-4 w-4 text-red-500" />
+              <WifiOff className="h-4 w-4 text-red-400" />
             )}
-            <span className="text-sm font-medium">
+            <span className="text-sm font-medium text-white">
               Real-time Collaboration
             </span>
-            <Badge variant={isConnected ? "default" : "secondary"}>
+            <Badge variant={isConnected ? "default" : "secondary"} className="text-xs">
               {connectionStatus}
             </Badge>
           </div>
           
           <div className="flex items-center space-x-2">
-            <Users className="h-4 w-4 text-blue-500" />
-            <span className="text-sm">
+            <Users className="h-4 w-4 text-blue-400" />
+            <span className="text-sm text-white">
               {collaborators.length + 1} collaborator{collaborators.length + 1 !== 1 ? 's' : ''}
             </span>
           </div>
         </div>
 
         <div className="flex items-center space-x-2">
-          <Badge variant="outline" className="text-xs">
+          <Badge variant="outline" className="text-xs border-gray-600 text-gray-300">
             <Shield className="h-3 w-3 mr-1" />
             End-to-end encrypted
           </Badge>
@@ -286,7 +286,7 @@ export default function RealTimeCollaboration({
             <h3 className="text-sm font-semibold mb-2">Active Collaborators</h3>
             
             {/* Current User */}
-            <div className="p-3 bg-blue-600/20 border border-blue-500 rounded-lg mb-3">
+            <div className="p-3 bg-blue-600/20 border border-blue-500/50 rounded-lg mb-3">
               <div className="flex items-center space-x-3">
                 <Avatar className="h-8 w-8">
                   <AvatarFallback 
@@ -297,8 +297,8 @@ export default function RealTimeCollaboration({
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex-1">
-                  <div className="font-medium text-sm">You</div>
-                  <div className="text-xs text-blue-400">Owner</div>
+                  <div className="font-medium text-sm text-white">You</div>
+                  <div className="text-xs text-blue-300">Owner</div>
                 </div>
                 <div className="w-2 h-2 bg-green-500 rounded-full"></div>
               </div>
@@ -310,7 +310,7 @@ export default function RealTimeCollaboration({
                 {collaborators.map((collaborator) => (
                   <div
                     key={collaborator.id}
-                    className="p-3 bg-gray-800 rounded-lg"
+                    className="p-3 bg-gray-800/60 rounded-lg border border-gray-700/50"
                   >
                     <div className="flex items-center space-x-3">
                       <Avatar className="h-8 w-8">
@@ -322,7 +322,7 @@ export default function RealTimeCollaboration({
                         </AvatarFallback>
                       </Avatar>
                       <div className="flex-1">
-                        <div className="font-medium text-sm">{collaborator.name}</div>
+                        <div className="font-medium text-sm text-white">{collaborator.name}</div>
                         <div className="flex items-center space-x-2 text-xs">
                           {collaborator.isActive ? (
                             <>
@@ -340,7 +340,7 @@ export default function RealTimeCollaboration({
                         </div>
                       </div>
                       {collaborator.cursor && (
-                        <div className="text-xs text-gray-500">
+                        <div className="text-xs text-gray-400">
                           L{collaborator.cursor.line}:{collaborator.cursor.column}
                         </div>
                       )}
@@ -397,12 +397,12 @@ export default function RealTimeCollaboration({
         {/* Right Panel - Chat & Activity */}
         <div className="w-80 border-l border-gray-800 flex flex-col">
           <Tabs defaultValue="chat" className="flex-1">
-            <TabsList className="grid w-full grid-cols-2 h-8">
-              <TabsTrigger value="chat" className="text-xs">
+            <TabsList className="grid w-full grid-cols-2 h-8 bg-gray-800/50 border border-gray-700">
+              <TabsTrigger value="chat" className="text-xs data-[state=active]:bg-gray-700 text-gray-300 data-[state=active]:text-white">
                 <MessageSquare className="h-3 w-3 mr-1" />
                 Chat
               </TabsTrigger>
-              <TabsTrigger value="activity" className="text-xs">
+              <TabsTrigger value="activity" className="text-xs data-[state=active]:bg-gray-700 text-gray-300 data-[state=active]:text-white">
                 <Activity className="h-3 w-3 mr-1" />
                 Activity
               </TabsTrigger>
@@ -423,19 +423,19 @@ export default function RealTimeCollaboration({
                           <div
                             className={`max-w-[80%] p-3 rounded-lg ${
                               isCurrentUser 
-                                ? 'bg-blue-600' 
-                                : 'bg-gray-800'
+                                ? 'bg-blue-700/90 text-white' 
+                                : 'bg-gray-800/80 text-gray-100'
                             }`}
                           >
                             <div className="flex items-center space-x-2 mb-1">
                               <span className="font-medium text-sm">
                                 {isCurrentUser ? 'You' : message.userName}
                               </span>
-                              <span className="text-xs opacity-70">
+                              <span className="text-xs opacity-80">
                                 {message.timestamp.toLocaleTimeString()}
                               </span>
                             </div>
-                            <div className="text-sm">
+                            <div className="text-sm text-white">
                               {message.message}
                             </div>
                           </div>
@@ -451,16 +451,16 @@ export default function RealTimeCollaboration({
                   </div>
                 </ScrollArea>
                 
-                <div className="p-3 border-t border-gray-800">
+                <div className="p-3 border-t border-gray-800 bg-gray-900/50">
                   <div className="flex space-x-2">
                     <Input
                       placeholder="Type a message..."
                       value={newMessage}
                       onChange={(e) => setNewMessage(e.target.value)}
                       onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
-                      className="flex-1 h-8 text-xs"
+                      className="flex-1 h-8 text-xs bg-gray-800 border-gray-700 text-white placeholder:text-gray-500"
                     />
-                    <Button size="sm" onClick={sendMessage} className="h-8">
+                    <Button size="sm" onClick={sendMessage} className="h-8 bg-blue-600 hover:bg-blue-700">
                       <Send className="h-3 w-3" />
                     </Button>
                   </div>
@@ -471,40 +471,40 @@ export default function RealTimeCollaboration({
             <TabsContent value="activity" className="flex-1 m-0">
               <ScrollArea className="h-full p-3">
                 <div className="space-y-3">
-                  <div className="p-3 bg-gray-800 rounded-lg">
+                  <div className="p-3 bg-gray-800/60 rounded-lg border border-gray-700/50">
                     <div className="flex items-center space-x-2 mb-2">
-                      <Edit className="h-4 w-4 text-blue-500" />
-                      <span className="font-medium text-sm">Code Changes</span>
+                      <Edit className="h-4 w-4 text-blue-400" />
+                      <span className="font-medium text-sm text-gray-200">Code Changes</span>
                     </div>
                     <div className="text-xs text-gray-400">
                       Real-time code synchronization active
                     </div>
                   </div>
                   
-                  <div className="p-3 bg-gray-800 rounded-lg">
+                  <div className="p-3 bg-gray-800/60 rounded-lg border border-gray-700/50">
                     <div className="flex items-center space-x-2 mb-2">
-                      <Cursor className="h-4 w-4 text-green-500" />
-                      <span className="font-medium text-sm">Cursor Positions</span>
+                      <MousePointer className="h-4 w-4 text-green-400" />
+                      <span className="font-medium text-sm text-gray-200">Cursor Positions</span>
                     </div>
                     <div className="text-xs text-gray-400">
                       {collaborators.filter(c => c.cursor).length} active cursors
                     </div>
                   </div>
                   
-                  <div className="p-3 bg-gray-800 rounded-lg">
+                  <div className="p-3 bg-gray-800/60 rounded-lg border border-gray-700/50">
                     <div className="flex items-center space-x-2 mb-2">
-                      <Zap className="h-4 w-4 text-yellow-500" />
-                      <span className="font-medium text-sm">Operations</span>
+                      <Zap className="h-4 w-4 text-yellow-400" />
+                      <span className="font-medium text-sm text-gray-200">Operations</span>
                     </div>
                     <div className="text-xs text-gray-400">
                       Operational transformation enabled
                     </div>
                   </div>
                   
-                  <div className="p-3 bg-gray-800 rounded-lg">
+                  <div className="p-3 bg-gray-800/60 rounded-lg border border-gray-700/50">
                     <div className="flex items-center space-x-2 mb-2">
-                      <Shield className="h-4 w-4 text-purple-500" />
-                      <span className="font-medium text-sm">Conflict Resolution</span>
+                      <Shield className="h-4 w-4 text-purple-400" />
+                      <span className="font-medium text-sm text-gray-200">Conflict Resolution</span>
                     </div>
                     <div className="text-xs text-gray-400">
                       Automatic merge conflict resolution

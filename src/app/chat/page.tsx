@@ -157,6 +157,26 @@ export default function ChatPage() {
   const [editingProject, setEditingProject] = useState<Partial<Project> | null>(null)
   const [projectsLoading, setProjectsLoading] = useState(true)
 
+  // Safe clipboard helper function
+  const copyToClipboard = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text)
+    } catch (err) {
+      console.error('Failed to copy text: ', err)
+      // Fallback: use document.execCommand
+      const textArea = document.createElement('textarea')
+      textArea.value = text
+      document.body.appendChild(textArea)
+      textArea.select()
+      try {
+        document.execCommand('copy')
+      } catch (fallbackErr) {
+        console.error('Fallback copy failed: ', fallbackErr)
+      }
+      document.body.removeChild(textArea)
+    }
+  }
+
   // Fetch projects on component mount
   useEffect(() => {
     fetchProjects()
@@ -810,7 +830,7 @@ class ViewController: UIViewController {
             key={index} 
             className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 hover:bg-blue-200 rounded-md cursor-pointer transition-colors"
             onClick={() => {
-              navigator.clipboard.writeText(`curl -X ${output.method} ${output.content}`)
+              copyToClipboard(`curl -X ${output.method} ${output.content}`)
             }}
           >
             <span className="text-xs font-mono font-bold text-blue-700">{output.method}</span>
@@ -910,7 +930,7 @@ class ViewController: UIViewController {
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => navigator.clipboard.writeText(cmd.command)}
+                          onClick={() => copyToClipboard(cmd.command)}
                           className="h-5 w-5 p-0 hover:bg-gray-200"
                         >
                           <Copy className="w-3 h-3" />
@@ -1488,7 +1508,7 @@ class ViewController: UIViewController {
                 <Badge variant="outline" className="text-xs">{selectedFile.size}</Badge>
               </div>
               <div className="flex items-center gap-2">
-                <Button size="sm" variant="outline" onClick={() => navigator.clipboard.writeText(selectedFile.content)}>
+                <Button size="sm" variant="outline" onClick={() => copyToClipboard(selectedFile.content)}>
                   <Copy className="w-4 h-4" />
                 </Button>
                 <Button size="sm" variant="outline">

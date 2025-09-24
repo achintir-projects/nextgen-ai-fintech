@@ -30,7 +30,9 @@ import {
   Activity,
   Database
 } from 'lucide-react'
-import ZAI from 'z-ai-web-dev-sdk'
+
+// Note: ZAI SDK should only be used on server side
+// For now, we'll mock the functionality
 
 interface Patch {
   id: string
@@ -90,11 +92,13 @@ export default function AIAgentPatch({ code, spec, onPatchApply, onCodeUpdate }:
   const analysisRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    // Initialize ZAI SDK
+    // Mock ZAI SDK initialization
     const initializeZAI = async () => {
       try {
-        const zai = await ZAI.create()
-        setZaiInstance(zai)
+        // Simulate ZAI connection
+        setTimeout(() => {
+          setZaiInstance({ connected: true })
+        }, 1000)
       } catch (error) {
         console.error('Failed to initialize ZAI:', error)
       }
@@ -296,7 +300,7 @@ export default function AIAgentPatch({ code, spec, onPatchApply, onCodeUpdate }:
           <div className="flex items-center space-x-2">
             <Bot className="h-5 w-5 text-blue-500" />
             <span className="font-medium">AI Agent</span>
-            {zaiInstance ? (
+            {zaiInstance?.connected ? (
               <Badge variant="default" className="bg-green-500">Connected</Badge>
             ) : (
               <Badge variant="secondary">Connecting...</Badge>

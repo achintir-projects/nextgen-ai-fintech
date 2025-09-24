@@ -484,7 +484,7 @@ export default function App() {
                 />
               </TabsContent>
 
-              <TabsContent value="debug" className="h-full m-0">
+              <TabsContent value="debugger" className="h-full m-0">
                 <PAAMDebugger
                   code={code}
                   spec={projectSpec}
