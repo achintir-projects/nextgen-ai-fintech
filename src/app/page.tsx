@@ -12,6 +12,7 @@ import { Progress } from "@/components/ui/progress"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { ThemeToggle } from "@/components/theme-toggle"
 import { 
   Search, 
   Plus, 
@@ -50,7 +51,12 @@ const mockProjects = [
     status: "active",
     lastActivity: "2 hours ago",
     badge: "KYC-ready",
-    href: "/project/1"
+    href: "/workspace/1",
+    requirements: ["User Authentication", "KYC Verification", "Payment Processing", "Transaction History"],
+    intent: "Provide a complete mobile banking experience with biometric authentication and seamless payments",
+    techStack: ["React Native", "PAAM SDK v2.1.0", "Node.js"],
+    progress: 75,
+    phase: "Development"
   },
   {
     id: "2", 
@@ -59,7 +65,12 @@ const mockProjects = [
     status: "deployed",
     lastActivity: "1 day ago",
     badge: "GitHub CI",
-    href: "/project/2"
+    href: "/workspace/2",
+    requirements: ["Payment Processing", "Fraud Detection", "Multi-currency Support", "Compliance Reporting"],
+    intent: "Create a secure payment gateway that supports multiple payment methods and currencies",
+    techStack: ["Node.js", "Stripe API", "PAAM SDK", "Docker"],
+    progress: 100,
+    phase: "Production"
   },
   {
     id: "3",
@@ -68,7 +79,12 @@ const mockProjects = [
     status: "building",
     lastActivity: "3 hours ago",
     badge: "SDK Downloads",
-    href: "/project/3"
+    href: "/workspace/3",
+    requirements: ["Real-time Data", "Custom Reports", "User Behavior Tracking", "Compliance Monitoring"],
+    intent: "Build an analytics platform for monitoring financial transactions and user behavior",
+    techStack: ["Vue.js", "D3.js", "WebSocket", "PostgreSQL"],
+    progress: 45,
+    phase: "Testing"
   }
 ]
 
@@ -261,6 +277,12 @@ export default function Home() {
             </div>
             
             <nav className="flex items-center">
+              <ThemeToggle />
+              <Button variant="ghost" size="icon" className="mr-2" asChild>
+                <a href="/auth/admin">
+                  <Settings className="h-4 w-4" />
+                </a>
+              </Button>
               <Button variant="ghost" size="icon" className="mr-2">
                 <Bell className="h-4 w-4" />
               </Button>
@@ -484,8 +506,54 @@ export default function Home() {
                       </div>
                       <CardDescription>{project.description}</CardDescription>
                     </CardHeader>
-                    <CardContent>
-                      <div className="flex items-center justify-between">
+                    <CardContent className="space-y-4">
+                      {/* Progress Bar */}
+                      <div>
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="text-xs text-muted-foreground">{project.phase}</span>
+                          <span className="text-xs text-muted-foreground">{project.progress}%</span>
+                        </div>
+                        <Progress value={project.progress} className="h-2" />
+                      </div>
+
+                      {/* Requirements */}
+                      <div>
+                        <h4 className="text-xs font-medium text-muted-foreground mb-2">Requirements</h4>
+                        <div className="flex flex-wrap gap-1">
+                          {project.requirements.slice(0, 3).map((req, idx) => (
+                            <Badge key={idx} variant="outline" className="text-xs">
+                              {req}
+                            </Badge>
+                          ))}
+                          {project.requirements.length > 3 && (
+                            <Badge variant="outline" className="text-xs">
+                              +{project.requirements.length - 3}
+                            </Badge>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Intent */}
+                      <div>
+                        <h4 className="text-xs font-medium text-muted-foreground mb-1">Intent</h4>
+                        <p className="text-xs text-muted-foreground line-clamp-2">
+                          {project.intent}
+                        </p>
+                      </div>
+
+                      {/* Tech Stack */}
+                      <div>
+                        <h4 className="text-xs font-medium text-muted-foreground mb-1">Tech Stack</h4>
+                        <div className="flex flex-wrap gap-1">
+                          {project.techStack.slice(0, 3).map((tech, idx) => (
+                            <Badge key={idx} variant="secondary" className="text-xs">
+                              {tech}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+
+                      <div className="flex items-center justify-between pt-2">
                         <div className="flex items-center space-x-2">
                           <Badge variant="outline" className="text-xs">
                             {project.badge}

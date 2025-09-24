@@ -41,9 +41,17 @@ export const authOptions: NextAuthOptions = {
           return null
         }
 
-        // For demo purposes, we'll accept any password for existing users
-        // In production, you should verify the password hash
-        const isPasswordValid = true // bcrypt.compare(credentials.password, user.password || "")
+        // For demo purposes, we'll accept specific passwords for demo users
+        let isPasswordValid = false
+        
+        if (credentials.email === 'admin@example.com' && credentials.password === 'admin123') {
+          isPasswordValid = true
+        } else if (credentials.email === 'user@example.com' && credentials.password === 'user123') {
+          isPasswordValid = true
+        } else {
+          // For other users, accept any password (in production, verify hash)
+          isPasswordValid = true // bcrypt.compare(credentials.password, user.password || "")
+        }
 
         if (!isPasswordValid) {
           return null

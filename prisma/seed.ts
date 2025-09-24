@@ -45,6 +45,29 @@ async function main() {
     }
   })
 
+  // Create demo users for auth testing
+  const demoAdminUser = await prisma.user.upsert({
+    where: { email: 'admin@example.com' },
+    update: {},
+    create: {
+      email: 'admin@example.com',
+      name: 'Demo Admin',
+      role: 'ADMIN',
+      organizationId: organization.id
+    }
+  })
+
+  const demoRegularUser = await prisma.user.upsert({
+    where: { email: 'user@example.com' },
+    update: {},
+    create: {
+      email: 'user@example.com',
+      name: 'Demo User',
+      role: 'USER',
+      organizationId: organization.id
+    }
+  })
+
   // Create demo customer
   const customer = await prisma.customer.upsert({
     where: { email: 'john.doe@example.com' },
@@ -268,8 +291,10 @@ async function main() {
 
   console.log('Database seeded successfully!')
   console.log('Demo users created:')
-  console.log('- Admin: admin@paam.com / password')
+  console.log('- Super Admin: admin@paam.com / password')
   console.log('- Compliance: compliance@paam.com / password')
+  console.log('- Demo Admin: admin@example.com / admin123')
+  console.log('- Demo User: user@example.com / user123')
 }
 
 main()

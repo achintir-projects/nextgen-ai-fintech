@@ -871,10 +871,10 @@ class ViewController: UIViewController {
             {/* Status Line */}
             <div className="p-3 pb-2">
               <div className="flex items-center justify-between">
-                <p className={`text-sm font-medium ${isUser ? "text-blue-900" : "text-gray-900"}`}>
+                <p className={`text-sm font-medium ${isUser ? "text-foreground" : "text-foreground"}`}>
                   {message.status}
                 </p>
-                <span className="text-xs text-gray-500">
+                <span className="text-xs text-muted-foreground">
                   {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                 </span>
               </div>
@@ -1111,8 +1111,8 @@ class ViewController: UIViewController {
                            selectedProject.platform === 'ios' ? '🍎' : '📱'}
                         </div>
                         <div>
-                          <h1 className="text-2xl font-bold text-gray-900">{selectedProject.name}</h1>
-                          <p className="text-gray-600">{selectedProject.description}</p>
+                          <h1 className="text-2xl font-bold text-foreground">{selectedProject.name}</h1>
+                          <p className="text-muted-foreground">{selectedProject.description}</p>
                           <div className="flex items-center gap-2 mt-2">
                             <Badge variant={selectedProject.status === 'ACTIVE' ? 'default' : 'secondary'}>
                               {selectedProject.status}
@@ -1140,7 +1140,7 @@ class ViewController: UIViewController {
                           <GitBranch className="w-8 h-8 text-blue-600" />
                           <div>
                             <p className="text-2xl font-bold">{selectedProject.builds.length}</p>
-                            <p className="text-sm text-gray-600">Total Builds</p>
+                            <p className="text-sm text-muted-foreground">Total Builds</p>
                           </div>
                         </div>
                       </CardContent>
@@ -1151,7 +1151,7 @@ class ViewController: UIViewController {
                           <Rocket className="w-8 h-8 text-green-600" />
                           <div>
                             <p className="text-2xl font-bold">{selectedProject.deployments.length}</p>
-                            <p className="text-sm text-gray-600">Deployments</p>
+                            <p className="text-sm text-muted-foreground">Deployments</p>
                           </div>
                         </div>
                       </CardContent>
@@ -1187,7 +1187,7 @@ class ViewController: UIViewController {
                                 }`}></div>
                                 <div>
                                   <p className="font-medium">Build #{build.buildNumber} - {build.version}</p>
-                                  <p className="text-sm text-gray-500">
+                                  <p className="text-sm text-muted-foreground">
                                     {build.startedAt && build.completedAt ? 
                                       `Completed in ${Math.round((build.completedAt.getTime() - build.startedAt.getTime()) / 1000)}s` :
                                       'In progress...'
@@ -1226,7 +1226,7 @@ class ViewController: UIViewController {
                                 }`}></div>
                                 <div>
                                   <p className="font-medium">{deployment.environment}</p>
-                                  <p className="text-sm text-gray-500">
+                                  <p className="text-sm text-muted-foreground">
                                     {deployment.deployedAt ? 
                                       `Deployed ${deployment.deployedAt.toLocaleDateString()}` :
                                       'In progress...'
@@ -1503,7 +1503,7 @@ class ViewController: UIViewController {
             {/* Modal Content */}
             <div className="flex-1 overflow-hidden">
               <ScrollArea className="h-full p-4">
-                <pre className="text-sm bg-gray-50 p-4 rounded-lg overflow-x-auto">
+                <pre className="text-sm bg-muted p-4 rounded-lg overflow-x-auto">
                   <code>{selectedFile.content}</code>
                 </pre>
               </ScrollArea>
@@ -1581,7 +1581,7 @@ class ViewController: UIViewController {
                         )}
                       </div>
                       <h4 className="text-lg font-semibold mb-2">{previewApp.name}</h4>
-                      <p className="text-gray-600 mb-4">{previewApp.description}</p>
+                      <p className="text-muted-foreground mb-4">{previewApp.description}</p>
                       <div className="flex justify-center gap-2">
                         <Button size="sm" className="bg-purple-600 hover:bg-purple-700">
                           <PlayCircle className="w-4 h-4 mr-2" />
@@ -1598,7 +1598,7 @@ class ViewController: UIViewController {
                 
                 <TabsContent value="code" className="mt-4 p-4">
                   <ScrollArea className="h-full">
-                    <pre className="text-sm bg-gray-50 p-4 rounded-lg overflow-x-auto">
+                    <pre className="text-sm bg-muted p-4 rounded-lg overflow-x-auto">
                       <code>{previewApp.code || "// App code will be displayed here"}</code>
                     </pre>
                   </ScrollArea>
@@ -1626,7 +1626,7 @@ class ViewController: UIViewController {
                     
                     <div>
                       <h4 className="font-medium mb-2">Description</h4>
-                      <p className="text-sm text-gray-600">{previewApp.description}</p>
+                      <p className="text-sm text-muted-foreground">{previewApp.description}</p>
                     </div>
                     
                     <div>
