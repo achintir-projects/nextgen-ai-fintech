@@ -13,6 +13,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import PAAMSpecDesigner from "@/components/paam-spec-designer"
 import MultiPlatformPreview from "@/components/multi-platform-preview"
 import IntentPreservationWorkbench from "@/components/intent-preservation-workbench"
+import PAAMDebugger from "@/components/paam-debugger"
+import FrameworkDeploymentManager from "@/components/framework-deployment-manager"
+import RealTimeCollaboration from "@/components/real-time-collaboration"
+import AIAgentPatch from "@/components/ai-agent-patch"
+import QualityDashboard from "@/components/quality-dashboard"
 import { 
   Play, 
   Square, 
@@ -34,7 +39,10 @@ import {
   Minimize2,
   Plus,
   Save,
-  Share
+  Share,
+  Bug,
+  Bot,
+  Rocket
 } from "lucide-react"
 
 // Dynamically import Monaco Editor to avoid SSR issues
@@ -369,7 +377,7 @@ export default function App() {
         <div className="flex-1 flex flex-col">
           <Tabs value={state.activeTab} onValueChange={(value) => setState(prev => ({ ...prev, activeTab: value }))}>
             <div className="border-b border-gray-800 bg-gray-950">
-              <TabsList className="h-10 bg-transparent">
+              <TabsList className="h-10 bg-transparent flex-wrap">
                 <TabsTrigger value="editor" className="data-[state=active]:bg-gray-800">
                   <Code className="h-4 w-4 mr-2" />
                   Editor
@@ -382,9 +390,29 @@ export default function App() {
                   <Globe className="h-4 w-4 mr-2" />
                   Preview
                 </TabsTrigger>
-                <TabsTrigger value="debug" className="data-[state=active]:bg-gray-800">
+                <TabsTrigger value="debugger" className="data-[state=active]:bg-gray-800">
+                  <Bug className="h-4 w-4 mr-2" />
+                  Debugger
+                </TabsTrigger>
+                <TabsTrigger value="analysis" className="data-[state=active]:bg-gray-800">
                   <BarChart3 className="h-4 w-4 mr-2" />
-                  Debug
+                  Analysis
+                </TabsTrigger>
+                <TabsTrigger value="collaboration" className="data-[state=active]:bg-gray-800">
+                  <Users className="h-4 w-4 mr-2" />
+                  Collaboration
+                </TabsTrigger>
+                <TabsTrigger value="ai-agent" className="data-[state=active]:bg-gray-800">
+                  <Bot className="h-4 w-4 mr-2" />
+                  AI Agent
+                </TabsTrigger>
+                <TabsTrigger value="deployment" className="data-[state=active]:bg-gray-800">
+                  <Rocket className="h-4 w-4 mr-2" />
+                  Deployment
+                </TabsTrigger>
+                <TabsTrigger value="quality" className="data-[state=active]:bg-gray-800">
+                  <Shield className="h-4 w-4 mr-2" />
+                  Quality
                 </TabsTrigger>
                 <TabsTrigger value="terminal" className="data-[state=active]:bg-gray-800">
                   <Terminal className="h-4 w-4 mr-2" />
@@ -457,6 +485,19 @@ export default function App() {
               </TabsContent>
 
               <TabsContent value="debug" className="h-full m-0">
+                <PAAMDebugger
+                  code={code}
+                  spec={projectSpec}
+                  onBreakpointChange={(breakpoints) => {
+                    console.log('Breakpoints changed:', breakpoints)
+                  }}
+                  onVariableInspect={(variable) => {
+                    console.log('Variable inspected:', variable)
+                  }}
+                />
+              </TabsContent>
+
+              <TabsContent value="analysis" className="h-full m-0">
               <div className="h-full flex">
                 <IntentPreservationWorkbench
                   entities={projectSpec.entities}
@@ -494,7 +535,46 @@ export default function App() {
               </div>
             </TabsContent>
 
-              <TabsContent value="terminal" className="h-full m-0">
+            <TabsContent value="collaboration" className="h-full m-0">
+              <RealTimeCollaboration
+                projectId={projectId}
+                code={code}
+                onCodeChange={setCode}
+              />
+            </TabsContent>
+
+            <TabsContent value="ai-agent" className="h-full m-0">
+              <AIAgentPatch
+                code={code}
+                spec={projectSpec}
+                onPatchApply={(patch) => {
+                  console.log('Patch applied:', patch)
+                }}
+                onCodeUpdate={setCode}
+              />
+            </TabsContent>
+
+            <TabsContent value="deployment" className="h-full m-0">
+              <FrameworkDeploymentManager
+                project={projectSpec}
+                onDeploy={(deployment) => {
+                  console.log('Deployment started:', deployment)
+                }}
+                onRollback={(deploymentId) => {
+                  console.log('Rollback initiated:', deploymentId)
+                }}
+              />
+            </TabsContent>
+
+            <TabsContent value="quality" className="h-full m-0">
+              <QualityDashboard
+                project={projectSpec}
+                code={code}
+                spec={projectSpec}
+              />
+            </TabsContent>
+
+            <TabsContent value="terminal" className="h-full m-0">
                 <div className="h-full bg-black">
                   <div className="h-full flex flex-col">
                     <div className="flex items-center justify-between px-4 py-2 border-b border-gray-800">
