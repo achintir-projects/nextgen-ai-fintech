@@ -1,0 +1,132 @@
+
+> nextjs_tailwind_shadcn_ts@0.1.0 dev
+> nodemon --exec "npx tsx server.ts" --watch server.ts --watch src --ext ts,tsx,js,jsx 2>&1 | tee dev.log
+
+[33m[nodemon] 3.1.10[39m
+[33m[nodemon] to restart at any time, enter `rs`[39m
+[33m[nodemon] watching path(s): server.ts src/**/*[39m
+[33m[nodemon] watching extensions: ts,tsx,js,jsx[39m
+[32m[nodemon] starting `npx tsx server.ts`[39m
+ ⨯ uncaughtException: Error: listen EADDRINUSE: address already in use 0.0.0.0:3000
+    at <unknown> (Error: listen EADDRINUSE: address already in use 0.0.0.0:3000) {
+  code: 'EADDRINUSE',
+  errno: -98,
+  syscall: 'listen',
+  address: '0.0.0.0',
+  port: 3000
+}
+ ⨯ uncaughtException:  Error: listen EADDRINUSE: address already in use 0.0.0.0:3000
+    at <unknown> (Error: listen EADDRINUSE: address already in use 0.0.0.0:3000) {
+  code: 'EADDRINUSE',
+  errno: -98,
+  syscall: 'listen',
+  address: '0.0.0.0',
+  port: 3000
+}
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `npx tsx server.ts`[39m
+ ⨯ uncaughtException: Error: listen EADDRINUSE: address already in use 0.0.0.0:3000
+    at <unknown> (Error: listen EADDRINUSE: address already in use 0.0.0.0:3000) {
+  code: 'EADDRINUSE',
+  errno: -98,
+  syscall: 'listen',
+  address: '0.0.0.0',
+  port: 3000
+}
+ ⨯ uncaughtException:  Error: listen EADDRINUSE: address already in use 0.0.0.0:3000
+    at <unknown> (Error: listen EADDRINUSE: address already in use 0.0.0.0:3000) {
+  code: 'EADDRINUSE',
+  errno: -98,
+  syscall: 'listen',
+  address: '0.0.0.0',
+  port: 3000
+}
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `npx tsx server.ts`[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `npx tsx server.ts`[39m
+> Ready on http://0.0.0.0:3000
+> Socket.IO server running at ws://0.0.0.0:3000/api/socketio
+ ○ Compiling /middleware ...
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: ENOENT: no such file or directory, rename '/home/z/my-project/.next/cache/webpack/client-development/0.pack.gz_' -> '/home/z/my-project/.next/cache/webpack/client-development/0.pack.gz'
+ ✓ Compiled /middleware in 1371ms (210 modules)
+ ○ Compiling /test-preview ...
+ ✓ Compiled /test-preview in 5.9s (911 modules)
+ GET /test-preview 200 in 6342ms
+ GET /test-preview 200 in 69ms
+ ○ Compiling /workspace/[projectId] ...
+ ✓ Compiled /workspace/[projectId] in 11.8s (3720 modules)
+ ⨯ ReferenceError: window is not defined
+    at (ssr)/./node_modules/monaco-editor/esm/vs/base/browser/window.js (.next/server/vendor-chunks/monaco-editor.js:1020:1)
+    at __webpack_require__ (.next/server/webpack-runtime.js:33:42)
+    at (ssr)/./node_modules/monaco-editor/esm/vs/editor/standalone/browser/standaloneEditor.js (.next/server/vendor-chunks/monaco-editor.js:5650:1)
+    at __webpack_require__ (.next/server/webpack-runtime.js:33:42)
+    at (ssr)/./node_modules/monaco-editor/esm/vs/editor/editor.api.js (.next/server/vendor-chunks/monaco-editor.js:5580:1)
+    at __webpack_require__ (.next/server/webpack-runtime.js:33:42)
+    at (ssr)/./node_modules/y-monaco/src/y-monaco.js (.next/server/vendor-chunks/y-monaco.js:20:1)
+    at __webpack_require__ (.next/server/webpack-runtime.js:33:42)
+    at eval (webpack-internal:///(ssr)/./src/components/real-time-collaboration.tsx:11:67)
+    at (ssr)/./src/components/real-time-collaboration.tsx (.next/server/app/workspace/[projectId]/page.js:281:1)
+    at __webpack_require__ (.next/server/webpack-runtime.js:33:42)
+    at eval (webpack-internal:///(ssr)/./src/app/workspace/[projectId]/page.tsx:21:94)
+    at (ssr)/./src/app/workspace/[projectId]/page.tsx (.next/server/app/workspace/[projectId]/page.js:193:1)
+    at Object.__webpack_require__ [as require] (.next/server/webpack-runtime.js:33:42)
+    at JSON.parse (<anonymous>) {
+  digest: '3784103904'
+}
+ GET /workspace/1 500 in 14785ms
+ ⨯ ReferenceError: window is not defined
+    at (ssr)/./node_modules/monaco-editor/esm/vs/base/browser/window.js (.next/server/vendor-chunks/monaco-editor.js:1020:1)
+    at __webpack_require__ (.next/server/webpack-runtime.js:33:42)
+    at (ssr)/./node_modules/monaco-editor/esm/vs/editor/standalone/browser/standaloneEditor.js (.next/server/vendor-chunks/monaco-editor.js:5650:1)
+    at __webpack_require__ (.next/server/webpack-runtime.js:33:42)
+    at (ssr)/./node_modules/monaco-editor/esm/vs/editor/editor.api.js (.next/server/vendor-chunks/monaco-editor.js:5580:1)
+    at __webpack_require__ (.next/server/webpack-runtime.js:33:42)
+    at (ssr)/./node_modules/y-monaco/src/y-monaco.js (.next/server/vendor-chunks/y-monaco.js:20:1)
+    at __webpack_require__ (.next/server/webpack-runtime.js:33:42)
+    at eval (webpack-internal:///(ssr)/./src/components/real-time-collaboration.tsx:11:67)
+    at (ssr)/./src/components/real-time-collaboration.tsx (.next/server/app/workspace/[projectId]/page.js:281:1)
+    at __webpack_require__ (.next/server/webpack-runtime.js:33:42)
+    at eval (webpack-internal:///(ssr)/./src/app/workspace/[projectId]/page.tsx:21:94)
+    at (ssr)/./src/app/workspace/[projectId]/page.tsx (.next/server/app/workspace/[projectId]/page.js:193:1)
+    at Object.__webpack_require__ [as require] (.next/server/webpack-runtime.js:33:42)
+    at JSON.parse (<anonymous>) {
+  digest: '3784103904'
+}
+ GET /workspace/1 500 in 408ms
+[31m[nodemon] app crashed - waiting for file changes before starting...[39m
+[32m[nodemon] restarting due to changes...[39m
+[32m[nodemon] starting `npx tsx server.ts`[39m
+> Ready on http://0.0.0.0:3000
+> Socket.IO server running at ws://0.0.0.0:3000/api/socketio
+ ○ Compiling /middleware ...
+ ✓ Compiled /middleware in 1327ms (210 modules)
+ ○ Compiling /workspace-simple/[projectId] ...
+ ✓ Compiled /workspace-simple/[projectId] in 6s (918 modules)
+ GET /workspace-simple/1 200 in 7571ms
+ ○ Compiling / ...
+ ✓ Compiled / in 1745ms (1065 modules)
+ GET / 200 in 2203ms
+ GET / 200 in 148ms
+ ○ Compiling /api/auth/[...nextauth] ...
+ ✓ Compiled /api/auth/[...nextauth] in 1444ms (1307 modules)
+ GET / 200 in 369ms
+ GET /api/auth/session 200 in 2344ms
+ POST /api/auth/_log 200 in 1175ms
+ GET /api/auth/session 200 in 25ms
+ GET / 200 in 174ms
+ GET /api/auth/session 200 in 21ms
+ GET / 200 in 136ms
+ GET /api/auth/session 200 in 19ms
+ GET / 200 in 205ms
+ GET /api/auth/session 200 in 50ms
+ GET / 200 in 169ms
+ GET /api/auth/session 200 in 21ms
+ GET / 200 in 139ms
+ GET /api/auth/session 200 in 25ms
+ GET / 200 in 145ms
+ GET /api/auth/session 200 in 22ms
+ GET / 200 in 151ms
+ GET /api/auth/session 200 in 20ms
+ GET / 200 in 151ms
+ GET /api/auth/session 200 in 27ms
