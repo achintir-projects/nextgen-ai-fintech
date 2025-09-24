@@ -1,0 +1,469 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// Core PAAM-Fin Meta-Model
+model Customer {
+  id              String   @id @default(cuid())
+  organizationId  String?
+  customerId      String   @unique // External customer ID
+  email           String   @unique
+  firstName       String
+  lastName        String
+  phone           String?
+  dateOfBirth     DateTime
+  nationality     String
+  countryOfResidence String
+  riskLevel       RiskLevel @default(MEDIUM)
+  status          CustomerStatus @default(PENDING)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  organization    Organization? @relation(fields: [organizationId], references: [id])
+  kycProfiles     KYCProfile[]
+  accounts        Account[]
+  transactions    Transaction[]
+  auditEntries    AuditEntry[]
+  
+  @@unique([customerId, organizationId])
+}
+
+model KYCProfile {
+  id              String   @id @default(cuid())
+  customerId      String
+  profileType     KYCType  // INDIVIDUAL, BUSINESS, TRUST
+  verificationStatus KYCStatus @default(PENDING)
+  riskScore       Float?
+  documents       KYCDocument[]
+  checks          KYCCheck[]
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  customer        Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+}
+
+model KYCDocument {
+  id              String   @id @default(cuid())
+  kycProfileId    String
+  documentType   DocumentType // PASSPORT, DRIVERS_LICENSE, UTILITY_BILL, etc.
+  documentNumber String?
+  issuedDate      DateTime?
+  expiryDate      DateTime?
+  issuingCountry  String?
+  fileUrl         String?
+  hash            String?   // For integrity verification
+  verificationStatus DocumentStatus @default(PENDING)
+  extractedData   Json?    // OCR/extracted data
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  kycProfile      KYCProfile @relation(fields: [kycProfileId], references: [id], onDelete: Cascade)
+}
+
+model KYCCheck {
+  id              String   @id @default(cuid())
+  kycProfileId    String
+  checkType       CheckType // SANCTIONS, PEP, WATCHLIST, ID_VERIFICATION
+  provider        String   // External provider (e.g., ComplyAdvantage, Refinitiv)
+  referenceId     String?  // External reference
+  status          CheckStatus @default(PENDING)
+  result          Json?    // Check results
+  riskScore       Float?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  kycProfile      KYCProfile @relation(fields: [kycProfileId], references: [id], onDelete: Cascade)
+}
+
+model Account {
+  id              String   @id @default(cuid())
+  customerId      String
+  accountNumber   String   @unique
+  accountType     AccountType // CHECKING, SAVINGS, INVESTMENT, CRYPTO
+  currency        String   @default("USD")
+  balance         Float     @default(0)
+  availableBalance Float     @default(0)
+  status          AccountStatus @default(ACTIVE)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  customer        Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  transactions    Transaction[] @relation("fromAccount")
+  receivedTransactions Transaction[] @relation("toAccount")
+  ledgerEntries   LedgerEntry[]
+}
+
+model Transaction {
+  id              String   @id @default(cuid())
+  referenceId     String   @unique
+  customerId      String?
+  fromAccountId   String
+  toAccountId     String?
+  amount          Float    
+  currency        String   @default("USD")
+  type            TransactionType // DEPOSIT, WITHDRAWAL, TRANSFER, PAYMENT
+  status          TransactionStatus @default(PENDING)
+  description     String?
+  metadata        Json?    // Additional transaction data
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  fromAccount     Account @relation("fromAccount", fields: [fromAccountId], references: [id], onDelete: Cascade)
+  toAccount       Account? @relation("toAccount", fields: [toAccountId], references: [id], onDelete: Cascade)
+  customer        Customer? @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  ledgerEntries   LedgerEntry[]
+}
+
+// Evidence Engine - Hash-chain audit log
+model AuditEntry {
+  id              String   @id @default(cuid())
+  customerId      String?
+  entityType      String   // 'Customer', 'Transaction', 'KYCProfile', etc.
+  entityId        String
+  action          String   // 'CREATE', 'UPDATE', 'DELETE', 'VERIFY', etc.
+  previousHash    String?  // Hash of previous entry for chain integrity
+  currentHash     String   // Hash of this entry
+  data            Json     // Complete snapshot of entity data
+  userId          String?  // Who performed the action
+  ipAddress       String?
+  userAgent       String?
+  createdAt       DateTime @default(now())
+
+  // Relations
+  customer        Customer? @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  
+  @@index([entityType, entityId])
+  @@index([createdAt])
+}
+
+// Organization Management
+model Organization {
+  id              String   @id @default(cuid())
+  name            String
+  type            OrganizationType // BANK, FINTECH, CRYPTO_EXCHANGE, etc.
+  registrationNumber String?
+  taxId           String?
+  country         String
+  status          OrganizationStatus @default(ACTIVE)
+  complianceLevel ComplianceLevel @default(STANDARD)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  customers       Customer[]
+  users           User[]
+  regulatoryRules RegulatoryRule[]
+}
+
+// Regulatory Rules Engine
+model RegulatoryRule {
+  id              String   @id @default(cuid())
+  organizationId  String?
+  name            String
+  description     String
+  ruleType        RuleType // COMPLIANCE, TRANSACTION_LIMIT, KYC_REQUIREMENT, etc.
+  regLangCode     String   // DSL code for the rule
+  isActive        Boolean  @default(true)
+  priority        Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  // Relations
+  organization    Organization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  ruleExecutions  RuleExecution[]
+}
+
+model RuleExecution {
+  id              String   @id @default(cuid())
+  ruleId          String
+  entityType      String
+  entityId        String
+  triggeredBy     String   // What triggered the execution
+  result          RuleResult
+  actionTaken     String?  // What action was taken
+  riskScore       Float?
+  createdAt       DateTime @default(now())
+
+  // Relations
+  rule            RegulatoryRule @relation(fields: [ruleId], references: [id], onDelete: Cascade)
+}
+
+// Ledger Service - Double-entry accounting
+model LedgerEntry {
+  id              String   @id @default(cuid())
+  accountId       String
+  amount          Float
+  currency        String   @default("USD")
+  type            EntryType // DEBIT or CREDIT
+  balance         Float     // Balance after this entry
+  transactionId   String
+  createdAt       DateTime @default(now())
+
+  // Relations
+  account         Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  transaction     Transaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+  
+  @@index([accountId])
+  @@index([transactionId])
+  @@index([createdAt])
+}
+
+// Legacy models (for backward compatibility)
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  organizationId String?
+  role      UserRole @default(USER)
+
+  // Relations
+  downloads    Download[]
+  apiKeys      ApiKey[]
+  organization Organization? @relation(fields: [organizationId], references: [id])
+}
+
+model Post {
+  id        String   @id @default(cuid())
+  title     String
+  content   String?
+  published Boolean  @default(false)
+  authorId  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// SDK Management Models
+model SdkVersion {
+  id          String   @id @default(cuid())
+  version     String
+  platform    String   // 'android' or 'ios'
+  filename    String
+  size        String
+  checksum    String
+  downloadUrl String
+  releaseDate DateTime
+  changelog   String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relations
+  downloads Download[]
+  
+  @@unique([version, platform])
+}
+
+model Download {
+  id           String   @id @default(cuid())
+  userId       String
+  sdkVersionId String
+  ipAddress    String?
+  userAgent   String?
+  downloadedAt DateTime @default(now())
+  
+  // Relations
+  user       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sdkVersion SdkVersion @relation(fields: [sdkVersionId], references: [id], onDelete: Cascade)
+}
+
+model ApiKey {
+  id        String   @id @default(cuid())
+  userId    String
+  key       String   @unique
+  name      String
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  expiresAt DateTime?
+  lastUsed  DateTime?
+  
+  // Relations
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Documentation {
+  id          String   @id @default(cuid())
+  title       String
+  content     String
+  platform    String?  // 'android', 'ios', or null for general
+  category    String   // 'quickstart', 'features', 'api', 'examples'
+  order       Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// Enum definitions
+enum RiskLevel {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum CustomerStatus {
+  PENDING
+  ACTIVE
+  SUSPENDED
+  CLOSED
+  BLOCKED
+}
+
+enum KYCType {
+  INDIVIDUAL
+  BUSINESS
+  TRUST
+}
+
+enum KYCStatus {
+  PENDING
+  IN_PROGRESS
+  APPROVED
+  REJECTED
+  EXPIRED
+  REVIEW_REQUIRED
+}
+
+enum DocumentType {
+  PASSPORT
+  DRIVERS_LICENSE
+  NATIONAL_ID
+  UTILITY_BILL
+  BANK_STATEMENT
+  PROOF_OF_ADDRESS
+  BUSINESS_REGISTRATION
+  TAX_ID
+}
+
+enum DocumentStatus {
+  PENDING
+  VERIFIED
+  REJECTED
+  EXPIRED
+  UNDER_REVIEW
+}
+
+enum CheckType {
+  SANCTIONS
+  PEP
+  WATCHLIST
+  ID_VERIFICATION
+  AGE_VERIFICATION
+  ADDRESS_VERIFICATION
+}
+
+enum CheckStatus {
+  PENDING
+  PASSED
+  FAILED
+  REVIEW_REQUIRED
+  ERROR
+}
+
+enum AccountType {
+  CHECKING
+  SAVINGS
+  INVESTMENT
+  CRYPTO
+  LOAN
+  CREDIT
+}
+
+enum AccountStatus {
+  ACTIVE
+  FROZEN
+  CLOSED
+  SUSPENDED
+  PENDING
+}
+
+enum TransactionType {
+  DEPOSIT
+  WITHDRAWAL
+  TRANSFER
+  PAYMENT
+  REFUND
+  FEE
+  INTEREST
+}
+
+enum TransactionStatus {
+  PENDING
+  COMPLETED
+  FAILED
+  CANCELLED
+  HELD
+  FLAGGED
+}
+
+enum OrganizationType {
+  BANK
+  FINTECH
+  CRYPTO_EXCHANGE
+  PAYMENT_PROCESSOR
+  INVESTMENT_FIRM
+  MONEY_SERVICE_BUSINESS
+}
+
+enum OrganizationStatus {
+  ACTIVE
+  SUSPENDED
+  TERMINATED
+  PENDING
+}
+
+enum ComplianceLevel {
+  BASIC
+  STANDARD
+  ENHANCED
+  HIGH
+}
+
+enum RuleType {
+  COMPLIANCE
+  TRANSACTION_LIMIT
+  KYC_REQUIREMENT
+  RISK_ASSESSMENT
+  REPORTING
+  SANCTION_SCREENING
+}
+
+enum RuleResult {
+  PASS
+  FAIL
+  WARNING
+  REVIEW
+  ERROR
+}
+
+enum UserRole {
+  USER
+  ADMIN
+  COMPLIANCE_OFFICER
+  RISK_ANALYST
+  AUDITOR
+  SUPER_ADMIN
+}
+
+enum EntryType {
+  DEBIT
+  CREDIT
+}
